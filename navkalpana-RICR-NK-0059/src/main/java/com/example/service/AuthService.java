@@ -12,7 +12,6 @@ import com.example.model.Teacher;
 import com.example.repository.TeacherRepository;
 import com.example.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import com.example.security.*;
 
 @Component
 @Service

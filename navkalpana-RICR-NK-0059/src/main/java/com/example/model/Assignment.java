@@ -1,23 +1,26 @@
-
 package com.example.model;
+
+
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class Student {
+public class Assignment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String enrollmentId;
-    private String email;
+    private String title;
+
+    private String description;
+
+    private LocalDate dueDate;
 
     @ManyToOne
     @JoinColumn(name = "batch_id")

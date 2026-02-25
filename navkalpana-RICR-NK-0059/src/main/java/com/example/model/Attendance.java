@@ -1,7 +1,10 @@
-
 package com.example.model;
+
+
+
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -9,17 +12,22 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Student {
+public class Attendance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String enrollmentId;
-    private String email;
+    private LocalDate date;
+
+    @Enumerated(EnumType.STRING)
+    private AttendanceStatus status;
+
+    private String remarks;
 
     @ManyToOne
-    @JoinColumn(name = "batch_id")
+    private Student student;
+
+    @ManyToOne
     private Batch batch;
 }

@@ -1,34 +1,33 @@
+
 package com.example.service;
 
-import org.springframework.stereotype.Service;
-
-import com.example.dto.DashboardSummaryDTO;
-
-import com.example.model.Batch;
+import com.example.dto.DashboardResponse;
+import com.example.repository.StudentRepository;
 import com.example.repository.BatchRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
 
+    private final StudentRepository studentRepository;
     private final BatchRepository batchRepository;
 
-    public DashboardSummaryDTO getSummary() {
+   
+    public DashboardResponse summary() {
 
+        long totalStudents = studentRepository.count();
+        long totalBatches = batchRepository.count();
+
+        
         long activeCourses = batchRepository.count();
-        long totalStudents = batchRepository.findAll()
-                .stream()
-                .mapToLong(Batch::getTotalStudents)
-                .sum();
 
-        long pendingAssignments = 5; // dummy for now
-
-        return new DashboardSummaryDTO(
-                totalStudents,
-                activeCourses,
-                pendingAssignments
-        );
+        return DashboardResponse.builder()
+                .totalStudents(totalStudents)
+                .totalBatches(totalBatches)
+                .activeCourses(activeCourses)
+                .build();
     }
 }

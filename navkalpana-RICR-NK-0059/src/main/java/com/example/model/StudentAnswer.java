@@ -1,25 +1,25 @@
 
 package com.example.model;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class Student {
+public class StudentAnswer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String enrollmentId;
-    private String email;
+    private String selectedAnswer;
 
     @ManyToOne
-    @JoinColumn(name = "batch_id")
-    private Batch batch;
+    private Question question;
+
+    @ManyToOne
+    private QuizAttempt quizAttempt;
 }

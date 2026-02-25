@@ -1,80 +1,69 @@
 
 package com.example.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.example.dto.AttendanceRequestDTO;
-import com.example.dto.StudentAttendanceDTO;
-import com.example.model.AttendanceRecord;
-import com.example.model.AttendanceSession;
-import com.example.repository.AttendanceRecordRepository;
-import com.example.repository.AttendanceSessionRepository;
+import com.example.dto.AttendanceRequest;
+import com.example.model.Attendance;
+import com.example.model.AttendanceStatus;
+import com.example.model.Student;
+import com.example.model.Batch;
+import com.example.repository.AttendanceRepository;
+import com.example.repository.StudentRepository;
+import com.example.repository.BatchRepository;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class AttendanceService {
 
-    private final AttendanceSessionRepository sessionRepository;
-    private final AttendanceRecordRepository recordRepository;
+    private final AttendanceRepository attendanceRepository;
+    private final StudentRepository studentRepository;
+    private final BatchRepository batchRepository;
 
-    public AttendanceService(AttendanceSessionRepository sessionRepository,
-                             AttendanceRecordRepository recordRepository) {
-        this.sessionRepository = sessionRepository;
-        this.recordRepository = recordRepository;
-    }
+    public void mark(AttendanceRequest request) {
 
-    @Transactional
-    public void markAttendance(AttendanceRequestDTO dto) {
-        if(dto.getRemarks() == null || dto.getRemarks().isBlank()){
-            throw new RuntimeException("Remarks mandatory");
+        Student student = studentRepository.findById(request.getStudentId())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        Batch batch = batchRepository.findById(request.getBatchId())
+                .orElseThrow(() -> new RuntimeException("Batch not found"));
+
+        AttendanceStatus status;
+        try {
+            status = AttendanceStatus.valueOf(request.getStatus().toUpperCase());
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid Attendance Status");
         }
 
-        AttendanceSession session = AttendanceSession.builder()
-                .batchId(dto.getBatchId())
-                .moduleName(dto.getModuleName())
-                .sessionDate(dto.getSessionDate())
-                .remarks(dto.getRemarks())
-                .createdAt(LocalDateTime.now())
+        Attendance attendance = Attendance.builder()
+                .student(student)
+                .batch(batch)
+                .date(request.getDate())
+                .status(status)
+                .remarks(request.getRemarks())
                 .build();
 
-        sessionRepository.save(session);
-
-        for(StudentAttendanceDTO s : dto.getStudents()){
-            AttendanceRecord record = AttendanceRecord.builder()
-                    .studentId(s.getStudentId())
-                    .status(s.getStatus())
-                    .markedAt(LocalDateTime.now())
-                    .session(session)
-                    .build();
-
-            recordRepository.save(record);
-        }
+        attendanceRepository.save(attendance);
     }
 
-    @Transactional
-    public void updateAttendance(Long sessionId, AttendanceRequestDTO dto){
-        AttendanceSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new RuntimeException("Session not found"));
+    // ✅ Used in Controller → service.calculateAttendancePercentage()
+    public double calculateAttendancePercentage(Long studentId) {
 
-        if(!session.getSessionDate().equals(LocalDate.now())){
-            throw new RuntimeException("Edit allowed only on same date");
-        }
+        long total = attendanceRepository.countByStudentId(studentId);
 
-        if(session.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now())){
-            throw new RuntimeException("Edit window expired");
-        }
+        if (total == 0) return 0;
 
-        session.setRemarks(dto.getRemarks());
-        sessionRepository.save(session);
+        long present = attendanceRepository
+                .countByStudentIdAndStatus(studentId, AttendanceStatus.PRESENT);
 
-        // Update records
-        for(StudentAttendanceDTO s : dto.getStudents()){
-            recordRepository.findById(s.getStudentId()).ifPresent(record -> {
-                record.setStatus(s.getStatus());
-                recordRepository.save(record);
-            });
-        }
+        return (double) present / total * 100;
+    }
+
+    // ✅ Used in Controller → service.getCountByStatus()
+    public long getCountByStatus(Long studentId, AttendanceStatus status) {
+
+        return attendanceRepository
+                .countByStudentIdAndStatus(studentId, status);
     }
 }

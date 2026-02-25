@@ -1,5 +1,4 @@
 
-
 package com.example.model;
 
 import jakarta.persistence.*;
@@ -9,8 +8,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "batch")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -20,25 +18,39 @@ public class Batch {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Batch Name
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "batch_name") // DB column
+    private String batchName;
 
-    // Batch Type (Online / Offline)
-    private String type;
+    @Column(name = "batch_type")
+    private String batchType;
 
-    // Total Students in Batch
-    @Column(name = "total_students")
-    private Integer totalStudents;
+    @Column(name = "progress")
+    private Double progress = 0.0; // default 0
 
-    // Progress Percentage
-    private Integer progress;
+    @Column(name = "progress_percentage")
+    private Double progressPercentage = 0.0; // default 0
 
-    // Batch Status
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private BatchStatus status;
 
-    // Optional Dates
+    @Column(name = "start_date")
     private LocalDate startDate;
+
+    @Column(name = "end_date")
     private LocalDate endDate;
+
+    @Column(name = "type")
+    private String type; // DB me column hai
+
+    @Column(name = "total_students")
+    private Integer totalStudents = 0;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
 }
+
+
+
+

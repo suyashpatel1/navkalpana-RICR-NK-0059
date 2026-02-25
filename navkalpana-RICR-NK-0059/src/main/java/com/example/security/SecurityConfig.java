@@ -1,44 +1,3 @@
-//package com.example.security;
-//
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-//import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-//import org.springframework.security.config.http.SessionCreationPolicy;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-//import org.springframework.security.web.SecurityFilterChain;
-//
-//import lombok.RequiredArgsConstructor;
-//
-//@Configuration
-//@EnableWebSecurity
-//@RequiredArgsConstructor
-//public class SecurityConfig {
-//
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//
-//        http
-//            .csrf().disable()
-//            .authorizeHttpRequests(auth -> auth
-//                .requestMatchers("/api/auth/**").permitAll()
-//                .anyRequest().authenticated()
-//            )
-//            .sessionManagement(session -> session
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//            );
-//
-//        return http.build();
-//    }
-//
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
-//}
-
-
 
 package com.example.security;
 
@@ -81,18 +40,20 @@ public class SecurityConfig {
 
             // ✅ Public endpoints
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "api/auth/**",
-                        "api/batches/**",
-                        "api/dashboard/**",
-                        "api/students",
-                        "api/attendance/**",
-                        "api/modules",
-                        "/webhook/razorpay"
-                ).permitAll()
-               
-                .anyRequest().authenticated()
-            );
+            	    .requestMatchers(
+            	            "/api/auth/**",
+            	            "/api/batches/**",
+            	            "/api/dashboard/**",
+            	            "/api/students/**",
+            	            "/api/attendance/**",
+            	            "/api/courses/**",  // <-- allow all GET/POST/PUT/DELETE under courses
+            	            "/api/assignment/**",
+            	            "/api/quizzes/**",
+            	            "/webhook/razorpay"
+            	    ).permitAll()
+            	    .anyRequest().authenticated()
+            	);
+                
 
         // ✅ JWT Filter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -106,7 +67,7 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ Frontend URL
+       
         config.setAllowedOrigins(List.of("http://localhost:5173"));
 
         // ✅ HTTP methods
